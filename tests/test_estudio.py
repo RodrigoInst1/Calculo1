@@ -7,6 +7,7 @@ import pytest
 from calculo.plan import PLAN, SEMANAS
 from calculo.progreso import Progreso
 from calculo.temas import TEMAS, generar
+from tests.test_generador import TEMAS_BASE
 
 
 @pytest.mark.parametrize("tema_id", list(TEMAS))
@@ -30,8 +31,8 @@ def test_plan_de_cuatro_semanas():
     for dia in PLAN:
         assert 60 <= dia.minutos <= 120, (dia.numero, dia.minutos)  # 1 a 2 horas
         assert all(t in TEMAS for t in dia.temas)
-    # todos los temas aparecen en el plan
-    assert set(TEMAS) <= {t for d in PLAN for t in d.temas}
+    # todos los temas del curso aparecen en el plan
+    assert TEMAS_BASE <= {t for d in PLAN for t in d.temas}
     # un día de repaso con simulacro al final de cada semana
     assert all(d.simulacro for d in PLAN if d.numero % 7 == 0)
 

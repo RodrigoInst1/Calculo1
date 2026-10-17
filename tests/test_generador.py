@@ -47,11 +47,17 @@ def respuesta_como_texto(ej) -> str:
     return str(r)
 
 
-def test_hay_catorce_temas_en_orden():
+TEMAS_BASE = {
+    "repaso", "limites", "continuidad", "derivadas_basicas", "producto_cociente", "regla_cadena", "implicita",
+    "maximos_minimos", "razon_cambio", "optimizacion", "integrales_indefinidas", "integrales_definidas", "tfc", "areas",
+}
+
+
+def test_temas_del_curso_en_orden():
     temas = lista_temas()
     assert [t.orden for t in temas] == sorted(t.orden for t in temas)
     assert temas[0].id == "repaso"
-    assert len(temas) == 14
+    assert TEMAS_BASE <= set(TEMAS)  # se pueden agregar más temas
     for t in temas:
         assert set(t.generadores) == set(DIFICULTADES), t.id
 

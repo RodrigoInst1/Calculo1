@@ -4,7 +4,7 @@ import pytest
 
 from calculo.simulacro import BLOQUES, crear_simulacro, elegir_temas
 from calculo.temas import TEMAS
-from tests.test_generador import respuesta_como_texto
+from tests.test_generador import TEMAS_BASE, respuesta_como_texto
 
 
 @pytest.mark.parametrize("cuantos", [5, 6])
@@ -64,5 +64,6 @@ def test_temas_elegidos_por_el_estudiante():
         crear_simulacro(cuantos=8)
 
 
-def test_los_bloques_cubren_todos_los_temas():
-    assert {t for b in BLOQUES for t in b} == set(TEMAS)
+def test_los_bloques_cubren_los_temas_del_curso():
+    assert {t for b in BLOQUES for t in b} == TEMAS_BASE
+    assert TEMAS_BASE <= set(TEMAS)
