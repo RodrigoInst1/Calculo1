@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import sympy as sp
 
-from .interprete import a_latex
+from .interprete import a_latex, a_latex_agrupado
 from .pasos import Paso, Solucion
 
 MAX_LHOPITAL = 4
@@ -79,7 +79,8 @@ def _flecha(x, a, direccion):
 
 
 def latex_limite(expr, x, a, direccion="+-"):
-    return rf"\lim_{{{_flecha(x, a, direccion)}}} {a_latex(expr)}"
+    cuerpo = a_latex_agrupado(expr)  # paréntesis si es suma, para que se vea qué abarca el límite
+    return rf"\lim_{{{_flecha(x, a, direccion)}}} {cuerpo}"
 
 
 def latex_valor(v) -> str:
@@ -150,7 +151,10 @@ class _Guia:
                 )
                 return v
 
-        numerador, denominador = sp.fraction(sp.together(e)) if not finito or _hay_fraccion(e) else (e, sp.Integer(1))
+        # Primero la fracción tal como está escrita; si no hay, intentamos juntar fracciones.
+        numerador, denominador = sp.fraction(e)
+        if not denominador.has(x) and (not finito or _hay_fraccion(e)):
+            numerador, denominador = sp.fraction(sp.together(e))
         if denominador.has(x):
             return self._cociente(e, numerador, denominador, nivel, profundidad)
 

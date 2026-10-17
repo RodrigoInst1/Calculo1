@@ -15,7 +15,7 @@ import sympy as sp
 from sympy.integrals import manualintegrate as mi
 
 from .derivadas import simplificar_bonito
-from .interprete import a_latex
+from .interprete import a_latex, a_latex_agrupado
 from .pasos import Paso, Solucion, son_equivalentes
 
 _ELEMENTALES = {
@@ -58,7 +58,10 @@ class _Traductor:
         return a_latex(e.subs(self.mapa_mostrar)) if self.mapa_mostrar else a_latex(e)
 
     def I(self, f, var) -> str:
-        return rf"\int {self.M(f)}\,d{self.M(var)}"
+        cuerpo = self.M(f)
+        if isinstance(sp.sympify(f), sp.Add):
+            cuerpo = rf"\left({cuerpo}\right)"
+        return rf"\int {cuerpo}\,d{self.M(var)}"
 
     def primitiva(self, regla) -> sp.Expr:
         try:
@@ -350,7 +353,7 @@ def integral_con_pasos(expr, x: sp.Symbol | None = None, a=None, b=None) -> Solu
 
 
 def _indefinida(expr, x) -> Solucion:
-    enunciado = rf"\int {a_latex(expr)}\,d{sp.latex(x)}"
+    enunciado = rf"\int {a_latex_agrupado(expr)}\,d{sp.latex(x)}"
     primitiva, pasos, advertencias, elemental = primitiva_con_pasos(expr, x)
     pasos.append(Paso(
         "Constante de integración",
@@ -385,7 +388,7 @@ def _evaluar_en(F, x, punto, direccion):
 
 
 def _definida(expr, x, a, b) -> Solucion:
-    enunciado = rf"\int_{{{a_latex(a)}}}^{{{a_latex(b)}}} {a_latex(expr)}\,d{sp.latex(x)}"
+    enunciado = rf"\int_{{{a_latex(a)}}}^{{{a_latex(b)}}} {a_latex_agrupado(expr)}\,d{sp.latex(x)}"
     correcto = sp.integrate(expr, (x, a, b))
     advertencias: list[str] = []
     pasos: list[Paso] = []

@@ -225,8 +225,14 @@ def _mensaje_sintaxis(texto: str) -> str:
 
 
 def a_latex(expr) -> str:
-    """LaTeX de una expresión, usando ``\\ln`` para el logaritmo natural."""
-    return sp.latex(expr, ln_notation=True)
+    """LaTeX de una expresión, usando ``\\ln`` y ``\\arctan`` como en clase."""
+    return sp.latex(expr, ln_notation=True, inv_trig_style="full")
+
+
+def a_latex_agrupado(expr) -> str:
+    """Como ``a_latex`` pero con paréntesis si es una suma (para integrales y límites)."""
+    texto = a_latex(expr)
+    return rf"\left({texto}\right)" if isinstance(expr, sp.Add) else texto
 
 
 def simbolo(nombre: str = "x") -> sp.Symbol:
