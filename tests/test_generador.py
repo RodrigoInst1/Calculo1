@@ -104,13 +104,11 @@ def test_factorizacion_exige_producto():
 
 
 def test_lectura_de_conjuntos_reales():
-    x = sp.Symbol("x")
     assert leer_conjunto_real("x >= 2") == sp.Interval(2, sp.oo)
     assert leer_conjunto_real("[2, oo)") == sp.Interval(2, sp.oo)
     assert leer_conjunto_real("x < -1 o x > 3") == sp.Union(sp.Interval.open(-sp.oo, -1), sp.Interval.open(3, sp.oo))
     assert leer_conjunto_real("-2 < x <= 3") == sp.Interval.Lopen(-2, 3)
     assert leer_conjunto_real("R") == sp.S.Reals
-    del x
 
 
 def test_numero_con_unidades():
