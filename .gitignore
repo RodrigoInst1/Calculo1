@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+# Progreso personal del estudiante (se crea al usar la app)
+datos/progreso.json
