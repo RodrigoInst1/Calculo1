@@ -12,6 +12,7 @@ from interfaz import (  # noqa: E402  (después de set_page_config)
     pagina_estudio,
     pagina_plan,
     pagina_progreso,
+    pagina_simulacro,
     pagina_solucionador,
 )
 from interfaz.navegacion import PAGINAS, ir_a  # noqa: E402
@@ -30,6 +31,7 @@ Esta herramienta te acompaña para **aprobar Cálculo I** empezando desde las ba
 | 📖 **Estudio** | Teoría corta, ejemplos resueltos y errores comunes de cada tema. |
 | 🗓️ **Plan** | Plan de 4 semanas, 1–2 h por la mañana. |
 | 📊 **Progreso** | Tus aciertos y fallos por tema, y qué repasar primero. |
+| 📝 **Simulacro** | Examen de práctica de 5–6 ejercicios con tiempo límite y nota final. |
 
 Todas las respuestas matemáticas las calcula y comprueba **SymPy**: nada se inventa.
 """
@@ -48,6 +50,7 @@ PAGINAS.update({
     "estudio": st.Page(pagina_estudio.pagina, title="Estudio", icon="📖", url_path="estudio"),
     "plan": st.Page(pagina_plan.pagina, title="Plan de 4 semanas", icon="🗓️", url_path="plan"),
     "progreso": st.Page(pagina_progreso.pagina, title="Progreso", icon="📊", url_path="progreso"),
+    "simulacro": st.Page(pagina_simulacro.pagina, title="Simulacro de parcial", icon="📝", url_path="simulacro"),
 })
 
 st.navigation(list(PAGINAS.values())).run()
