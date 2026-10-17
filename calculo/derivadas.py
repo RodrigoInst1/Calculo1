@@ -327,7 +327,9 @@ def derivar_con_pasos(expr, x: sp.Symbol | None = None, orden: int = 1) -> Soluc
         actual = simplificada
 
     # Verificación obligatoria contra SymPy: nunca mostramos un resultado sin comprobar.
-    correcta = sp.diff(expr, x, orden)
+    # Con x real, SymPy deriva bien |x| (da sign(x) en vez de partes real e imaginaria).
+    x_real = sp.Dummy(str(x), real=True)
+    correcta = sp.diff(expr.subs(x, x_real), x_real, orden).subs(x_real, x)
     advertencias = []
     if not son_equivalentes(actual, correcta, [x]):
         advertencias.append("Los pasos guiados no coincidieron con SymPy; se muestra el resultado de SymPy.")

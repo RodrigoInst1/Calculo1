@@ -81,6 +81,8 @@ class Ejercicio:
             correcto, mensaje, interpretado = _COMPARADORES[self.tipo_respuesta](self, texto)
         except ErrorEntrada as error:
             return Veredicto(False, f"No pude leer tu respuesta: {error}")
+        except Exception:  # red de seguridad: nunca mostrar un error técnico
+            return Veredicto(False, "No pude comparar tu respuesta. Revisa cómo está escrita (mira la ayuda de formato).")
         if correcto:
             return Veredicto(True, mensaje or "¡Correcto!", [], interpretado)
         return Veredicto(False, mensaje or "Todavía no es correcto.", list(self.pistas), interpretado)
@@ -251,7 +253,7 @@ def _leer_simple(t: str, x) -> sp.Set:
     if m:
         a, op1, op2, b = m.groups()
         return sp.Interval(interpretar(a), interpretar(b), left_open=(op1 == "<"), right_open=(op2 == "<"))
-    relacion = interpretar(t)
+    relacion = interpretar(t, relaciones=True)
     if not isinstance(relacion, sp.core.relational.Relational):
         raise ErrorEntrada("Escribe una desigualdad (como «x >= 2») o un intervalo (como «[2, oo)»).")
     if relacion.free_symbols - {x}:

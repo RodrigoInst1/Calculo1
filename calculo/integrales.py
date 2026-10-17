@@ -317,7 +317,12 @@ def primitiva_con_pasos(expr, x):
     if primitiva is None:
         candidata = sp.integrate(expr, x)
         if candidata.has(sp.Integral):
-            return None, [], ["Esta integral no tiene una primitiva expresable con funciones elementales."], False
+            # Con x real SymPy integra casos como |x|.
+            x_real = sp.Dummy(str(x), real=True)
+            candidata = sp.integrate(expr.subs(x, x_real), x_real).subs(x_real, x)
+        if candidata.has(sp.Integral):
+            return None, [], ["SymPy no encontró una primitiva con funciones elementales "
+                              "(muchas integrales, como la de $e^{x^2}$, no la tienen)."], False
         if not son_equivalentes(sp.diff(candidata, x), expr, [x]):
             advertencias.append("SymPy no pudo confirmar el resultado; revísalo derivando.")
         traductor.pasos.append(Paso(

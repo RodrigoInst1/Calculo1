@@ -128,15 +128,26 @@ def _separar_funciones(t: str) -> str:
     return re.sub(r"[a-zA-Z]+", lambda m: separar(m.group(0)), t)
 
 
+# Letras que se pueden escribir pegadas como producto de variables ("xy" = x*y).
+_LETRAS_PEGABLES = set("xyzt")
+
+
 def _validar_identificadores(t: str) -> None:
-    """Rechaza nombres raros para evitar que se ejecute código inesperado."""
+    """Rechaza palabras desconocidas (por ejemplo «floor») con un mensaje claro.
+
+    Una palabra que no es función ni constante solo se acepta si es una letra
+    suelta o varias de x, y, z, t pegadas (como «xy»).
+    """
     for palabra in re.findall(r"[a-zA-Z_]+", t):
-        if palabra in FUNCIONES or palabra in CONSTANTES:
+        if palabra in FUNCIONES or palabra in CONSTANTES or len(palabra) == 1:
             continue
-        # Palabras de solo letras se interpretan como producto de variables
-        # (por ejemplo "xy" = x*y). Bloqueamos nombres de Python peligrosos.
-        if "_" in palabra or palabra.lower() in {"lambda", "import", "eval", "exec", "open"}:
-            raise ErrorEntrada(f"No reconozco «{palabra}» como parte de una expresión matemática.")
+        if "_" not in palabra and set(palabra) <= _LETRAS_PEGABLES:
+            continue
+        disponibles = "sin, cos, tan, sec, csc, cot, arcsin, arccos, arctan, sinh, cosh, tanh, exp, ln, log, sqrt, abs"
+        raise ErrorEntrada(
+            f"No reconozco «{palabra}». Las funciones disponibles son: {disponibles}. "
+            "Si querías multiplicar letras, sepáralas con «*» (por ejemplo «a*b»)."
+        )
 
 
 def _revisar_parentesis(t: str) -> None:
@@ -152,11 +163,12 @@ def _revisar_parentesis(t: str) -> None:
         raise ErrorEntrada("Falta cerrar un paréntesis: hay más «(» que «)».")
 
 
-def interpretar(texto: str, variables: tuple[str, ...] = ()) -> sp.Expr:
+def interpretar(texto: str, variables: tuple[str, ...] = (), relaciones: bool = False) -> sp.Expr:
     """Convierte ``texto`` en una expresión de SymPy.
 
     ``variables`` es opcional: si se indica, la expresión solo puede usar esas
     letras como variables (útil para detectar errores de escritura).
+    ``relaciones``: si es True se aceptan desigualdades como ``x >= 2``.
     """
     if texto is None or not str(texto).strip():
         raise ErrorEntrada("La expresión está vacía. Escribe algo como «x^2 + 3x».")
@@ -179,8 +191,12 @@ def interpretar(texto: str, variables: tuple[str, ...] = ()) -> sp.Expr:
 
     diccionario = dict(FUNCIONES)
     diccionario.update(CONSTANTES)
+    # Espacio de nombres mínimo: solo lo que necesita el analizador de SymPy.
+    # Así ningún nombre escrito por el usuario puede llamar a otras funciones.
+    globales = {"Symbol": sp.Symbol, "Integer": sp.Integer, "Float": sp.Float, "Rational": sp.Rational,
+                "Function": sp.Function, "__builtins__": {}}
     try:
-        expr = parse_expr(t, local_dict=diccionario, transformations=_TRANSFORMACIONES)
+        expr = parse_expr(t, local_dict=diccionario, global_dict=globales, transformations=_TRANSFORMACIONES)
     except (SyntaxError, TypeError, ValueError, AttributeError, TokenError) as error:
         raise ErrorEntrada(_mensaje_sintaxis(texto)) from error
     except Exception as error:  # cualquier otro fallo de SymPy se traduce
@@ -196,6 +212,11 @@ def interpretar(texto: str, variables: tuple[str, ...] = ()) -> sp.Expr:
         raise ErrorEntrada("Escribiste varias expresiones separadas por comas; escribe solo una.")
     if isinstance(expr, sp.FunctionClass) or (isinstance(expr, type)):
         raise ErrorEntrada("Falta el argumento de la función. Escribe, por ejemplo, «sin(x)».")
+    es_relacion = isinstance(expr, (sp.core.relational.Relational, sp.logic.boolalg.BooleanAtom))
+    if es_relacion and not relaciones:
+        raise ErrorEntrada("Aquí va una expresión o un número, no una desigualdad (quita «<», «>»).")
+    if not es_relacion and not isinstance(expr, sp.Expr):
+        raise ErrorEntrada(_mensaje_sintaxis(texto))
 
     if variables:
         permitidas = {sp.Symbol(v) for v in variables}

@@ -52,6 +52,11 @@ def _es_valor(v) -> bool:
     return v in (sp.oo, -sp.oo) or bool(v.is_real)
 
 
+def _es_complejo(v) -> bool:
+    v = sp.sympify(v)
+    return bool(v.is_number and v.is_finite and v.is_real is False)
+
+
 def limite_sympy(expr, x, a, direccion: str = "+-"):
     """Valor correcto del límite según SymPy.
 
@@ -63,10 +68,14 @@ def limite_sympy(expr, x, a, direccion: str = "+-"):
         return v if _es_valor(v) else NoExiste("la función oscila o no se acerca a un valor")
     if direccion in ("+", "-"):
         v = sp.limit(expr, x, a, dir=direccion)
+        if _es_complejo(v):
+            return NoExiste("la función no está definida en los reales cerca del punto")
         return v if _es_valor(v) else NoExiste("la función oscila o no se acerca a un valor")
     derecho = sp.limit(expr, x, a, dir="+")
     izquierdo = sp.limit(expr, x, a, dir="-")
     if not (_es_valor(derecho) and _es_valor(izquierdo)):
+        if _es_complejo(derecho) or _es_complejo(izquierdo):
+            return NoExiste("la función no está definida en los reales cerca del punto", izquierdo, derecho)
         return NoExiste("la función oscila o no se acerca a un valor", izquierdo, derecho)
     if _iguales(derecho, izquierdo):
         return derecho

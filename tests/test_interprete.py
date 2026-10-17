@@ -60,3 +60,9 @@ def test_restriccion_de_variables():
     with pytest.raises(ErrorEntrada, match="letras que no esperaba"):
         interpretar("x + y", variables=("x",))
     assert interpretar("x + 1", variables=("x",)) == x + 1
+
+
+def test_desigualdades_solo_si_se_permiten():
+    with pytest.raises(ErrorEntrada, match="desigualdad"):
+        interpretar("x >= 3")
+    assert interpretar("x >= 3", relaciones=True) == (x >= 3)

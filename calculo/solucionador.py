@@ -119,7 +119,7 @@ def _limite(resto: str):
 def _derivada(resto: str, orden: int = 1):
     t = resto.strip()
     var = None
-    m = re.search(r"\s+(?:respecto\s+(?:a|de)l?|con\s+respecto\s+a)\s+([a-z])\s*$", t)
+    m = re.search(r"(?:^|\s+)(?:respecto\s+(?:a|de)l?|con\s+respecto\s+a)\s+([a-z])\s*$", t)
     if m:
         var = m.group(1)
         t = t[: m.start()]

@@ -86,6 +86,8 @@ def verificar(solucion: Solucion, respuesta: str) -> Veredicto:
             return _verificar_limite(solucion, respuesta)
     except ErrorEntrada as error:
         return Veredicto(False, f"No pude leer tu respuesta: {error}")
+    except Exception:  # red de seguridad: nunca mostrar un error técnico
+        return Veredicto(False, "No pude comparar tu respuesta. Revisa cómo está escrita e inténtalo otra vez.")
     return Veredicto(False, "Este tipo de problema todavía no se puede verificar.")
 
 
