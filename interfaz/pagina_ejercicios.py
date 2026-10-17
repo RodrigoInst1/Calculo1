@@ -7,6 +7,7 @@ import random
 import streamlit as st
 
 from calculo.ejercicios import DIFICULTADES, NOMBRE_DIFICULTAD
+from calculo.progreso import Progreso
 from calculo.temas import TEMAS, generar
 from interfaz.componentes import ayuda_escritura, mostrar_enunciado, mostrar_solucion_ejercicio, mostrar_veredicto
 
@@ -48,14 +49,23 @@ def pagina():
         st.session_state.pop("pistas_ejercicio", None)
         veredicto = ej.verificar(respuesta)
         st.session_state["ej_veredicto"] = veredicto
-        registrar = st.session_state.get("registrar_intento")
-        if registrar is not None and veredicto.mensaje and "No pude leer" not in veredicto.mensaje:
-            registrar(ej, veredicto.correcto)
+        # Se registra un intento por ejercicio (el primero), sin contar respuestas ilegibles.
+        clave = f"registrado_{ej.id}"
+        if not st.session_state.get(clave) and "No pude leer" not in veredicto.mensaje \
+                and "Escribe tu respuesta" not in veredicto.mensaje:
+            Progreso().registrar(ej.tema, ej.dificultad, veredicto.correcto)
+            st.session_state[clave] = True
     if st.session_state.get("ej_veredicto") is not None:
         mostrar_veredicto(st.session_state["ej_veredicto"], "ejercicio")
 
     if st.button("👀 Ver la solución completa"):
         st.session_state["ej_ver_solucion"] = True
+        # Ver la solución sin haber respondido cuenta como fallo (para detectar puntos débiles).
+        clave = f"registrado_{ej.id}"
+        if not st.session_state.get(clave):
+            Progreso().registrar(ej.tema, ej.dificultad, False)
+            st.session_state[clave] = True
     if st.session_state.get("ej_ver_solucion"):
         mostrar_solucion_ejercicio(ej)
+    st.caption("En tu progreso se registra el primer intento de cada ejercicio (ver la solución antes cuenta como fallo).")
     ayuda_escritura()
