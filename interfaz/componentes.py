@@ -4,15 +4,20 @@ from __future__ import annotations
 
 import streamlit as st
 
+from calculo.ejercicios import NOMBRE_DIFICULTAD, Ejercicio
 from calculo.pasos import Solucion
 from calculo.verificador import Veredicto
 
 
-def mostrar_pasos(solucion: Solucion, titulo: str = "Procedimiento paso a paso") -> None:
-    """Muestra los pasos con sangría según el nivel y la regla en negrita."""
+def mostrar_pasos(solucion, titulo: str = "Procedimiento paso a paso") -> None:
+    """Muestra los pasos con sangría según el nivel y la regla en negrita.
+
+    ``solucion`` puede ser una ``Solucion`` o directamente una lista de pasos.
+    """
+    pasos = solucion.pasos if hasattr(solucion, "pasos") else solucion
     st.markdown(f"#### {titulo}")
     numero = 0
-    for paso in solucion.pasos:
+    for paso in pasos:
         numero += 1
         sangria = "&nbsp;" * 6 * paso.nivel
         marca = "↳ " if paso.nivel else ""
@@ -89,3 +94,18 @@ def ayuda_escritura() -> None:
 | $\\frac{x+1}{x-1}$ | `(x+1)/(x-1)` ← ¡usa paréntesis! |
 """
         )
+
+
+def mostrar_enunciado(ej: Ejercicio) -> None:
+    st.markdown(f"**{NOMBRE_DIFICULTAD.get(ej.dificultad, ej.dificultad)}** · `{ej.id}`")
+    st.markdown(ej.enunciado)
+
+
+def mostrar_solucion_ejercicio(ej: Ejercicio) -> None:
+    """Respuesta correcta y pasos (todo calculado con SymPy)."""
+    if ej.solucion is not None:
+        mostrar_solucion(ej.solucion)
+        return
+    st.success("Respuesta correcta (calculada con SymPy):")
+    st.latex(ej.respuesta_latex)
+    mostrar_pasos(ej.pasos)
